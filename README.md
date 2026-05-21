@@ -6,8 +6,8 @@
 ![Pydantic](https://img.shields.io/badge/Powered%20by-Pydantic-e92063?style=flat-square&logo=pydantic&logoColor=white)
 ![Code Style](https://img.shields.io/badge/Code%20Style-Google-blue?style=flat-square)
 ![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=MnemOnicE_Vtr&metric=code_smells&token=97e48d43be849d33347274d2aa5edbf3a9e2eaf8)
-![Bugs](https://sonarcloud.io/api/project_badges/measure?project=MnemOnicE_Vtr&metric=bugs&token=97e48d43be849d33347274d2aa5edbf3a9e2eaf8)](https://sonarcloud.io/summary/new_code?id=MnemOnicE_Vtr) 
-![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=MnemOnicE_Vtr&metric=ncloc&token=97e48d43be849d33347274d2aa5edbf3a9e2eaf8)](https://sonarcloud.io/summary/new_code?id=MnemOnicE_Vtr)
+![Bugs](https://sonarcloud.io/api/project_badges/measure?project=MnemOnicE_Vtr&metric=bugs&token=97e48d43be849d33347274d2aa5edbf3a9e2eaf8) 
+![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=MnemOnicE_Vtr&metric=ncloc&token=97e48d43be849d33347274d2aa5edbf3a9e2eaf8)
 
 **Status:** Reference Implementation (V2.2)
 **Focus:** Security & Chain of Custody
