@@ -18,12 +18,38 @@ The **Video Truth Record (.vtr)** is an open standard for **Hardware-Attested Me
 
 This standard is designed for **Security Cameras, Dashcams, and Trusted User Devices** where data integrity is paramount. It solves the "Deepfake Defense" problem by verifying the *source hardware* rather than analyzing the pixels.
 
+### System Architecture
+
+```mermaid
+graph TD
+    A[Camera Sensor] -->|Capture Video| B(Video File .mp4)
+    A -->|Extract PRNU Noise| C{Hardware Fingerprint}
+    A -->|Liveness Check| D{3D Depth/Gyro}
+    B --> E[Merkle Tree Hash]
+    C --> F(ZK Proof Generation)
+    D --> F
+    E --> F
+    F --> G[VTR Sidecar .vtr.json]
+    B -.-> H[(VTR Container)]
+    G -.-> H
+```
+
 **Core Principles:**
 1.  **Hardware is Truth:** We rely on the physical fingerprint (PRNU) of the sensor, not software signatures.
 2.  **Privacy by Design:** Zero-Knowledge Proofs verify the hardware signature without revealing the device's unique serial number or owner identity.
 3.  **Chain of Custody:** Each recording is cryptographically linked to the previous one, creating an unbroken timeline of events.
 
 ## Features
+
+### Chain of Custody Architecture
+
+```mermaid
+graph LR
+    A[Recording 1<br/>Sidecar] -->|signature_link| B[Recording 2<br/>Sidecar]
+    B -->|signature_link| C[Recording 3<br/>Sidecar]
+    C -->|signature_link| D[Recording N<br/>Sidecar]
+```
+
 
 *   **Hardware Root of Trust:** Leverages unique sensor noise patterns (PRNU) to attest origin.
 *   **Tamper-Evident Container:** Merkle Tree hashing ensures frame-by-frame integrity.
@@ -77,6 +103,27 @@ Options:
 *   `--allow-ai`: Flag to allow your data to be used for AI training.
 *   `--link-to <PATH>`: Path to a previous sidecar to create a "Chain of Custody" link.
 
+### Signing Data Flow
+
+```mermaid
+sequenceDiagram
+    participant CLI
+    participant VTRContainer
+    participant MockPRNU
+    participant Filesystem
+
+    CLI->>VTRContainer: Init with video
+    VTRContainer->>MockPRNU: request ZK proof & metadata
+    MockPRNU-->>VTRContainer: return ZK Proof
+    VTRContainer->>VTRContainer: Compute Merkle Tree (frame hashing)
+    VTRContainer->>VTRContainer: Assemble VTR Sidecar Schema
+    VTRContainer->>Filesystem: Write .vtr.json
+    Filesystem-->>CLI: Success Output
+```
+
+![Sign Command Example](https://dummyimage.com/600x300/282c34/abb2bf.gif&text=python3+-m+vtr_standard.poc.cli+sign+my_video.mp4)
+
+
 #### Verify a Video
 
 Verify the integrity and authenticity of a VTR container:
@@ -89,6 +136,26 @@ This checks:
 1.  **File Integrity:** Merkle Tree hashing of the video content.
 2.  **Signature Validity:** Cryptographic verification of the ZK proof.
 3.  **Schema Compliance:** Ensures the sidecar matches V2.0 specs.
+
+### Verification Data Flow
+
+```mermaid
+sequenceDiagram
+    participant CLI
+    participant VTRValidator
+    participant Filesystem
+
+    CLI->>Filesystem: Read .mp4 and .vtr.json
+    Filesystem-->>VTRValidator: Load Data
+    VTRValidator->>VTRValidator: 1. Validate JSON Schema
+    VTRValidator->>VTRValidator: 2. Recompute Merkle Root
+    VTRValidator->>VTRValidator: 3. Verify ZK Proof matches
+    VTRValidator-->>CLI: Output Verification Result
+```
+
+![Verify Command Example](https://dummyimage.com/600x300/282c34/abb2bf.gif&text=python3+-m+vtr_standard.poc.cli+verify+my_video.mp4)
+
+
 
 ## API Documentation
 
