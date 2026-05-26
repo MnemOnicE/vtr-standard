@@ -135,7 +135,7 @@ class VTRContainer:
         )
 
         # Write to disk
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write(sidecar.model_dump_json(indent=4))
 
         logger.info(f"✅ VTR Sidecar created: {filename}")
