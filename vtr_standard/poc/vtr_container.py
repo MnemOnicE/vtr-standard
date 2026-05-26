@@ -53,7 +53,7 @@ class VTRContainer:
             try:
                 # STRICT CHAIN OF CUSTODY CHECK
                 # If a previous link is requested, it MUST be valid.
-                with open(previous_sidecar_path, "r") as f:
+                with open(previous_sidecar_path, "r", encoding="utf-8") as f:
                     prev_data = json.load(f)
 
                 # We attempt to validate the previous sidecar against the schema to ensure integrity
