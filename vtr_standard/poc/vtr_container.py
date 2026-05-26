@@ -53,7 +53,7 @@ class VTRContainer:
             try:
                 # STRICT CHAIN OF CUSTODY CHECK
                 # If a previous link is requested, it MUST be valid.
-                with open(previous_sidecar_path, "r", encoding="utf-8") as f:
+                with open(previous_sidecar_path, "r") as f:
                     prev_data = json.load(f)
 
                 # We attempt to validate the previous sidecar against the schema to ensure integrity
@@ -135,7 +135,7 @@ class VTRContainer:
         )
 
         # Write to disk
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w") as f:
             f.write(sidecar.model_dump_json(indent=4))
 
         logger.info(f"✅ VTR Sidecar created: {filename}")

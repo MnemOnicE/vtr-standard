@@ -61,7 +61,7 @@ class TestMerkleCompatibility(unittest.TestCase):
             for leaves in test_cases:
                 # Pre-hash the leaves to simulate _compute_leaves output
                 hashed_leaves = (
-                    [hashlib.sha256(b"\x00" + l).digest() for l in leaves]
+                    [hashlib.sha256(b"\x00" + leaf).digest() for leaf in leaves]
                     if leaves
                     else [hashlib.sha256(b"\x00").digest()]
                 )

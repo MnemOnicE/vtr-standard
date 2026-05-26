@@ -26,7 +26,7 @@ def export_schema():
     # Generate JSON schema from Pydantic model
     schema_dict = VTRSidecar.model_json_schema()
 
-    with open(schema_path, "w", encoding="utf-8") as f:
+    with open(schema_path, 'w') as f:
         json.dump(schema_dict, f, indent=2)
 
     print(f"Successfully exported schema to {schema_path}")

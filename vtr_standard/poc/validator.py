@@ -41,7 +41,7 @@ class VTRValidator:
     """
 
     def _parse_sidecar(self, sidecar_path: str) -> VTRSidecar:
-        with open(sidecar_path, "r", encoding="utf-8") as f:
+        with open(sidecar_path, "r") as f:
             raw_data = json.load(f)
         return VTRSidecar.model_validate(raw_data)
 
@@ -174,7 +174,16 @@ class VTRValidator:
                 error_code="INVALID_JSON",
                 message="Sidecar file contains invalid JSON.",
             )
-        except ValidationError as e:
+        except OSError:
+            # Generic read failure - Log internally, sanitize externally
+            logger.error("VTR Sidecar Read Error", exc_info=True)
+            return VerificationResult(
+                is_valid=False,
+                error_code="READ_ERROR",
+                message="An error occurred while reading or parsing the sidecar file.",
+                details={},
+            )
+        except Exception as e:
             # Pydantic validation failed - Log internally, sanitize externally
             sanitized_error = " | ".join(str(e).splitlines())
             logger.error(f"VTR Schema Validation Error: {sanitized_error}")
@@ -187,15 +196,6 @@ class VTRValidator:
                         len(e.errors()) if hasattr(e, "errors") else 1
                     )
                 },
-            )
-        except OSError:
-            # Generic read failure - Log internally, sanitize externally
-            logger.error("VTR Sidecar Read Error", exc_info=True)
-            return VerificationResult(
-                is_valid=False,
-                error_code="READ_ERROR",
-                message="An error occurred while reading or parsing the sidecar file.",
-                details={},
             )
 
         # 3. Cryptographic Verification

@@ -4,50 +4,42 @@
 # This code is distributed WITHOUT ANY WARRANTY.
 
 import unittest
-import os
-import sys
-import io
-import json
 from unittest.mock import patch, MagicMock
+import os
+import json
+import io
+import sys
 
 # VTR-STANDUP: Fallback Mock for restricted environments where pydantic is missing.
-try:
-    import pydantic
-except ImportError:
 
-    class MockBaseModel:
-        def __init__(self, **kwargs):
-            for k, v in kwargs.items():
-                if isinstance(v, dict):
-                    setattr(self, k, type("obj", (object,), v)())
-                else:
-                    setattr(self, k, v)
+class MockBaseModel:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
-        @classmethod
-        def model_validate(cls, data):
-            return cls(**data)
+    @classmethod
+    def model_validate(cls, data):
+        return cls(**data)
 
-        def model_dump_json(self, **kwargs):
-            import json
+    def model_dump_json(self, **kwargs):
+        import json
 
-            def default(obj):
-                if hasattr(obj, "__dict__"):
-                    return obj.__dict__
-                return str(obj)
+        def default(obj):
+            if hasattr(obj, "__dict__"):
+                return obj.__dict__
+            return str(obj)
 
-            return json.dumps(self.__dict__, default=default)
-
-    import sys
-    from unittest.mock import MagicMock
-
-    mock_pydantic = MagicMock()
-    mock_pydantic.BaseModel = MockBaseModel
-    mock_pydantic.Field = MagicMock(return_value=None)
-    sys.modules["pydantic"] = mock_pydantic
+        return json.dumps(self.__dict__, default=default)
 
 
-from vtr_standard.poc.vtr_container import VTRContainer
-from vtr_standard.poc.cli import cmd_verify, cmd_sign
+mock_pydantic = MagicMock()
+mock_pydantic.BaseModel = MockBaseModel
+mock_pydantic.Field = MagicMock(return_value=None)
+sys.modules["pydantic"] = mock_pydantic
+
+
+from vtr_standard.poc.vtr_container import VTRContainer # noqa: E402
+from vtr_standard.poc.cli import cmd_verify, cmd_sign # noqa: E402
 
 
 class TestCLI(unittest.TestCase):
