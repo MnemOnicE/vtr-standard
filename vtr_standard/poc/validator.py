@@ -41,7 +41,7 @@ class VTRValidator:
     """
 
     def _parse_sidecar(self, sidecar_path: str) -> VTRSidecar:
-        with open(sidecar_path, "r") as f:
+        with open(sidecar_path, "r", encoding="utf-8") as f:
             raw_data = json.load(f)
         return VTRSidecar.model_validate(raw_data)
 
