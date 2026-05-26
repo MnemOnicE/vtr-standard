@@ -1,6 +1,6 @@
 import os
-import pytest
 from vtr_standard.poc.vtr_container import ensure_dummy_video
+
 
 def test_ensure_dummy_video_creates_file(tmp_path):
     """Test that ensure_dummy_video creates a 1MB file when it doesn't exist."""
@@ -23,6 +23,7 @@ def test_ensure_dummy_video_creates_file(tmp_path):
         # Cleanup
         if os.path.exists(file_path_str):
             os.remove(file_path_str)
+
 
 def test_ensure_dummy_video_skips_existing_file(tmp_path):
     """Test that ensure_dummy_video does not overwrite an existing file."""

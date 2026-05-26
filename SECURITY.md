@@ -1,21 +1,20 @@
 # Security Policy
 
-## Supported Versions
-
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
-
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+We take the security of the Video Truth Record (VTR) protocol and its reference implementations seriously.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+If you discover a vulnerability, please **DO NOT** open a public issue.
+
+Instead, please send an email to: **security@ontologics.com**
+
+### Scope
+
+Please clearly distinguish in your report whether the vulnerability is:
+1.  **Software-Level**: A bug in the Python PoC code (e.g., buffer overflow, bad input validation, dependency vulnerability).
+2.  **Protocol-Level**: A flaw in the mathematical assumptions or architecture of the standard itself (e.g., Merkle tree collision attack, ZK-proof forgery, or replay attack vectors).
+
+Protocol-Level vulnerabilities are extremely critical as they affect all implementers of the VTR standard, not just the Python reference implementation.
+
+### Response Time
+We will strive to acknowledge receipt of your vulnerability report within 48 hours and provide an estimated timeline for triage and resolution.

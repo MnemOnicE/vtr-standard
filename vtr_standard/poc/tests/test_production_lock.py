@@ -8,6 +8,7 @@ import os
 from unittest.mock import patch
 from vtr_standard.poc.mock_prnu import MockPRNU
 
+
 class TestProductionLock(unittest.TestCase):
     """
     Tests the Security Hardening: Production Safeguards for MockPRNU.
@@ -30,17 +31,20 @@ class TestProductionLock(unittest.TestCase):
         """
         # Test default (None)
         with patch.dict(os.environ, {}, clear=True):
-             try:
+            try:
                 MockPRNU("sensor_123")
-             except RuntimeError:
-                self.fail("MockPRNU raised RuntimeError unexpectedly without VTR_ENV set")
+            except RuntimeError:
+                self.fail(
+                    "MockPRNU raised RuntimeError unexpectedly without VTR_ENV set"
+                )
 
         # Test other values
         with patch.dict(os.environ, {"VTR_ENV": "DEVELOPMENT"}):
-             try:
+            try:
                 MockPRNU("sensor_123")
-             except RuntimeError:
+            except RuntimeError:
                 self.fail("MockPRNU raised RuntimeError unexpectedly in DEVELOPMENT")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

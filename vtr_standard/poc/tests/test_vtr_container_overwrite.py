@@ -10,30 +10,33 @@ from unittest.mock import MagicMock
 
 # VTR-STANDUP: Fallback Mock for restricted environments where pydantic is missing.
 # Sentinel: "Trust nothing, but verify the logic even if the infra is brittle."
-try:
-    import pydantic
-except ImportError:
-    class MockBaseModel:
-        def __init__(self, **kwargs):
-            for k, v in kwargs.items():
-                setattr(self, k, v)
-        @classmethod
-        def model_validate(cls, data):
-            return cls(**data)
-        def model_dump_json(self, **kwargs):
-            import json
-            def default(obj):
-                if hasattr(obj, '__dict__'):
-                    return obj.__dict__
-                return str(obj)
-            return json.dumps(self.__dict__, default=default)
 
-    mock_pydantic = MagicMock()
-    mock_pydantic.BaseModel = MockBaseModel
-    mock_pydantic.Field = MagicMock(return_value=None)
-    sys.modules["pydantic"] = mock_pydantic
+class MockBaseModel:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
-from vtr_standard.poc.vtr_container import VTRContainer
+    @classmethod
+    def model_validate(cls, data):
+        return cls(**data)
+
+    def model_dump_json(self, **kwargs):
+        import json
+
+        def default(obj):
+            if hasattr(obj, "__dict__"):
+                return obj.__dict__
+            return str(obj)
+
+        return json.dumps(self.__dict__, default=default)
+
+mock_pydantic = MagicMock()
+mock_pydantic.BaseModel = MockBaseModel
+mock_pydantic.Field = MagicMock(return_value=None)
+sys.modules["pydantic"] = mock_pydantic
+
+from vtr_standard.poc.vtr_container import VTRContainer  # noqa: E402
+
 
 class TestVTRContainerOverwrite(unittest.TestCase):
     """
@@ -80,6 +83,7 @@ class TestVTRContainerOverwrite(unittest.TestCase):
         # This should succeed without raising FileExistsError
         self.container.create_sidecar(overwrite=True)
         self.assertTrue(os.path.exists(self.sidecar_path))
+
 
 if __name__ == "__main__":
     unittest.main()

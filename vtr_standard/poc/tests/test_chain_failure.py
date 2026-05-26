@@ -1,13 +1,12 @@
-
 import unittest
 import os
 import json
 import logging
 from vtr_standard.poc.vtr_container import VTRContainer
-from vtr_standard.poc.schemas import VTRSidecar
 
 # Disable logging for tests
 logging.getLogger("vtr_standard.poc.vtr_container").setLevel(logging.CRITICAL)
+
 
 class TestChainFailure(unittest.TestCase):
     def setUp(self):
@@ -36,10 +35,10 @@ class TestChainFailure(unittest.TestCase):
 
         # The bad_sidecar has invalid schema, which gets caught and re-raised as "Chain of Custody Failure: ..."
         self.assertIn("Chain of Custody Failure:", str(context.exception))
-        self.assertIn("Previous sidecar schema validation failed:", str(context.exception.__cause__))
-
-
-
+        self.assertIn(
+            "Previous sidecar schema validation failed:",
+            str(context.exception.__cause__),
+        )
 
     def test_missing_sidecar_raises_exception(self):
         """Test that linking to a non-existent sidecar raises FileNotFoundError."""
@@ -49,8 +48,9 @@ class TestChainFailure(unittest.TestCase):
         with self.assertRaises(FileNotFoundError) as context:
             container.create_sidecar(previous_sidecar_path=missing_path)
 
-        self.assertEqual(str(context.exception), f"Previous sidecar not found at: {missing_path}")
-
+        self.assertEqual(
+            str(context.exception), f"Previous sidecar not found at: {missing_path}"
+        )
 
     def test_invalid_json_sidecar_raises_exception(self):
         """Test that linking to a sidecar with invalid JSON raises ValueError."""
@@ -65,10 +65,14 @@ class TestChainFailure(unittest.TestCase):
             with self.assertRaises(ValueError) as context:
                 container.create_sidecar(previous_sidecar_path=invalid_json_sidecar)
 
-            self.assertEqual(str(context.exception), f"Previous sidecar is not valid JSON: {invalid_json_sidecar}")
+            self.assertEqual(
+                str(context.exception),
+                f"Previous sidecar is not valid JSON: {invalid_json_sidecar}",
+            )
         finally:
             if os.path.exists(invalid_json_sidecar):
                 os.remove(invalid_json_sidecar)
+
 
 if __name__ == "__main__":
     unittest.main()

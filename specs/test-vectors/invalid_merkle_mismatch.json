@@ -1,0 +1,17 @@
+{
+  "vtr_version": "2.2",
+  "hardware_signature": {
+    "public_key": "pub_test_1234",
+    "zk_proof": "zk_test_5678",
+    "liveness_flag": true,
+    "timestamp": 1779769116.0583756,
+    "merkle_root": "invalid_root_hash_here",
+    "location_block_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "previous_signature_link": null,
+    "nonce": "cccccccccccccccccccccccccccccccc"
+  },
+  "legal_assertions": {
+    "x_vtr_ai_training": false,
+    "copyright_notice": "Copyright (c) 2025"
+  }
+}
