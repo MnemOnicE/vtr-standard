@@ -13,26 +13,28 @@ from typing import List, Generator
 # Configure module-level logger
 logger = logging.getLogger(__name__)
 
+
 class AsyncFileStream:
     """
     Reads a file in a background thread to keep the IO pipe full
     while the main thread processes the data.
     """
+
     def __init__(self, file_path: str, chunk_size: int):
         self.file_path = file_path
         self.chunk_size = chunk_size
-        self.queue = Queue(maxsize=4) # Keep 4 chunks in memory (Backpressure)
+        self.queue: Queue = Queue(maxsize=4)  # Keep 4 chunks in memory (Backpressure)
         self.stop_event = threading.Event()
         self.thread = threading.Thread(target=self._read_file_worker, daemon=True)
 
     def _read_file_worker(self):
         try:
-            with open(self.file_path, 'rb') as f:
+            with open(self.file_path, "rb") as f:
                 while not self.stop_event.is_set():
                     chunk = f.read(self.chunk_size)
                     if not chunk:
                         break
-                    self.queue.put(chunk) # Blocks if queue is full
+                    self.queue.put(chunk)  # Blocks if queue is full
         except Exception as e:
             # Log the error and allow the consumer to handle EOF or failure
             logger.error(f"IO Failure in AsyncFileStream: {e}")
@@ -40,7 +42,7 @@ class AsyncFileStream:
             # The main thread handles file existence check beforehand.
             pass
         finally:
-            self.queue.put(None) # Sentinel value to signal EOF
+            self.queue.put(None)  # Sentinel value to signal EOF
 
     def stream(self) -> Generator[bytes, None, None]:
         self.thread.start()
@@ -49,6 +51,7 @@ class AsyncFileStream:
             if chunk is None:
                 break
             yield chunk
+
 
 class MerkleTree:
     """
@@ -70,7 +73,9 @@ class MerkleTree:
         # Explicitly check for file existence to preserve strict error handling contract
         # This ensures FileNotFoundError is raised immediately, matching legacy behavior.
         if not os.path.isfile(self.file_path):
-            raise FileNotFoundError(f"File not found or is not a regular file: {self.file_path}")
+            raise FileNotFoundError(
+                f"File not found or is not a regular file: {self.file_path}"
+            )
 
         self.leaves = self._compute_leaves()
         self.root = self._compute_root(self.leaves)
@@ -79,7 +84,7 @@ class MerkleTree:
         """Reads the file in chunks using AsyncFileStream and computes SHA256 hash for each chunk."""
         hashes = []
         streamer = AsyncFileStream(self.file_path, self.chunk_size)
-        leaf_hasher = hashlib.sha256(b'\x00')
+        leaf_hasher = hashlib.sha256(b"\x00")
 
         for chunk in streamer.stream():
             h = leaf_hasher.copy()
@@ -87,7 +92,7 @@ class MerkleTree:
             hashes.append(h.digest())
 
         if not hashes:
-            return [hashlib.sha256(b'\x00').digest()]
+            return [hashlib.sha256(b"\x00").digest()]
 
         return hashes
 
@@ -97,14 +102,16 @@ class MerkleTree:
         if not current_level:
             return ""
 
-        internal_hasher = hashlib.sha256(b'\x01')
+        internal_hasher = hashlib.sha256(b"\x01")
         while len(current_level) > 1:
             next_len = (len(current_level) + 1) // 2
             for i in range(next_len):
                 idx = i * 2
                 node1 = current_level[idx]
                 # Handle odd number of leaves by duplicating the last one
-                node2 = current_level[idx+1] if idx + 1 < len(current_level) else node1
+                node2 = (
+                    current_level[idx + 1] if idx + 1 < len(current_level) else node1
+                )
 
                 h = internal_hasher.copy()
                 h.update(node1)

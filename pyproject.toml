@@ -29,3 +29,17 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 include = ["vtr_standard*"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1.0",
+    "black>=23.0",
+    "mypy>=1.0",
+    "bandit>=1.7.0",
+    "pip-audit>=2.7.0",
+]
+
+[tool.bandit]
+exclude_dirs = ["vtr_standard/poc/tests"]
+skips = ["B101"]

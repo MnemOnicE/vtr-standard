@@ -13,6 +13,7 @@ from vtr_standard.poc.validator import VTRValidator
 # Configure test logger
 logging.basicConfig(level=logging.ERROR)
 
+
 class TestSecurityHardening(unittest.TestCase):
     VIDEO_PATH = "test_security.mp4"
     SIDECAR_PATH = "test_security.mp4.vtr.json"
@@ -24,10 +25,13 @@ class TestSecurityHardening(unittest.TestCase):
 
     def tearDown(self):
         # Cleanup
-        if os.path.exists(self.VIDEO_PATH): os.remove(self.VIDEO_PATH)
-        if os.path.exists(self.SIDECAR_PATH): os.remove(self.SIDECAR_PATH)
+        if os.path.exists(self.VIDEO_PATH):
+            os.remove(self.VIDEO_PATH)
+        if os.path.exists(self.SIDECAR_PATH):
+            os.remove(self.SIDECAR_PATH)
         # Clear env vars
-        if "VTR_TEST_LIVENESS" in os.environ: del os.environ["VTR_TEST_LIVENESS"]
+        if "VTR_TEST_LIVENESS" in os.environ:
+            del os.environ["VTR_TEST_LIVENESS"]
 
     def test_tamper_resistance_liveness(self):
         """Test that modifying liveness_flag invalidates the signature."""
@@ -37,7 +41,7 @@ class TestSecurityHardening(unittest.TestCase):
         container.create_sidecar()
 
         # 2. Modify sidecar: Set liveness to False
-        with open(self.SIDECAR_PATH, 'r') as f:
+        with open(self.SIDECAR_PATH, "r") as f:
             data = json.load(f)
 
         # Sanity check: it was true
@@ -45,7 +49,7 @@ class TestSecurityHardening(unittest.TestCase):
 
         # Tamper: Set to False
         data["hardware_signature"]["liveness_flag"] = False
-        with open(self.SIDECAR_PATH, 'w') as f:
+        with open(self.SIDECAR_PATH, "w") as f:
             json.dump(data, f)
 
         # 3. Verify
@@ -53,7 +57,7 @@ class TestSecurityHardening(unittest.TestCase):
         result = validator.validate_container(self.VIDEO_PATH)
 
         self.assertFalse(result.is_valid)
-        self.assertEqual(result.error_code, "INVALID_SIGNATURE") # Crypto fail
+        self.assertEqual(result.error_code, "INVALID_SIGNATURE")  # Crypto fail
 
     def test_strict_liveness_check(self):
         """Test that verification fails if liveness is authentic but False."""
@@ -78,12 +82,12 @@ class TestSecurityHardening(unittest.TestCase):
         container.create_sidecar()
 
         # 2. Tamper
-        with open(self.SIDECAR_PATH, 'r') as f:
+        with open(self.SIDECAR_PATH, "r") as f:
             data = json.load(f)
 
         data["hardware_signature"]["location_block_hash"] = "deadbeef" * 8
 
-        with open(self.SIDECAR_PATH, 'w') as f:
+        with open(self.SIDECAR_PATH, "w") as f:
             json.dump(data, f)
 
         # 3. Verify
@@ -101,7 +105,7 @@ class TestSecurityHardening(unittest.TestCase):
         container.create_sidecar()
 
         # 2. Tamper: Change Nonce
-        with open(self.SIDECAR_PATH, 'r') as f:
+        with open(self.SIDECAR_PATH, "r") as f:
             data = json.load(f)
 
         # Sanity check: nonce exists
@@ -110,7 +114,7 @@ class TestSecurityHardening(unittest.TestCase):
         # Modify nonce
         data["hardware_signature"]["nonce"] = "modified_nonce_123"
 
-        with open(self.SIDECAR_PATH, 'w') as f:
+        with open(self.SIDECAR_PATH, "w") as f:
             json.dump(data, f)
 
         # 3. Verify
@@ -130,6 +134,7 @@ class TestSecurityHardening(unittest.TestCase):
         result = validator.validate_container(self.VIDEO_PATH)
 
         self.assertTrue(result.is_valid)
+
 
 if __name__ == "__main__":
     unittest.main()

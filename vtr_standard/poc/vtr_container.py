@@ -14,6 +14,7 @@ from .schemas import VTRSidecar, HardwareSignature, LegalAssertions
 # Configure module-level logger
 logger = logging.getLogger(__name__)
 
+
 class VTRContainer:
     """Manages the creation of Video Truth Record (VTR) containers.
 
@@ -29,7 +30,9 @@ class VTRContainer:
         # Initialize the hardware root of trust (the Merged MockPRNU)
         self.prnu = MockPRNU(sensor_id_mock)
 
-    def create_sidecar(self, allow_ai_training=False, previous_sidecar_path=None, overwrite=False):
+    def create_sidecar(
+        self, allow_ai_training=False, previous_sidecar_path=None, overwrite=False
+    ):
         """Generates the .vtr sidecar JSON file.
 
         Args:
@@ -50,7 +53,7 @@ class VTRContainer:
             try:
                 # STRICT CHAIN OF CUSTODY CHECK
                 # If a previous link is requested, it MUST be valid.
-                with open(previous_sidecar_path, 'r') as f:
+                with open(previous_sidecar_path, "r") as f:
                     prev_data = json.load(f)
 
                 # We attempt to validate the previous sidecar against the schema to ensure integrity
@@ -65,12 +68,18 @@ class VTRContainer:
                     raise ValueError(f"Previous sidecar schema validation failed: {e}")
 
                 if not previous_signature:
-                    raise ValueError(f"Could not extract zk_proof from {previous_sidecar_path}")
+                    raise ValueError(
+                        f"Could not extract zk_proof from {previous_sidecar_path}"
+                    )
 
             except FileNotFoundError:
-                raise FileNotFoundError(f"Previous sidecar not found at: {previous_sidecar_path}")
+                raise FileNotFoundError(
+                    f"Previous sidecar not found at: {previous_sidecar_path}"
+                )
             except json.JSONDecodeError:
-                raise ValueError(f"Previous sidecar is not valid JSON: {previous_sidecar_path}")
+                raise ValueError(
+                    f"Previous sidecar is not valid JSON: {previous_sidecar_path}"
+                )
             except Exception as e:
                 # Re-raise to halt execution. Chain of Custody cannot be optional if requested.
                 raise ValueError(f"Chain of Custody Failure: {e}") from e
@@ -80,7 +89,9 @@ class VTRContainer:
         liveness_flag = self.prnu.check_liveness()
 
         if not liveness_flag:
-            logger.warning("⚠️  WARNING: Liveness check FAILED. The generated VTR will be cryptographically valid but flagged as 'Synthetic' by validators.")
+            logger.warning(
+                "⚠️  WARNING: Liveness check FAILED. The generated VTR will be cryptographically valid but flagged as 'Synthetic' by validators."
+            )
 
         location_block_hash = self.prnu.calculate_location_block_hash()
 
@@ -97,7 +108,7 @@ class VTRContainer:
             location_block_hash=location_block_hash,
             nonce=nonce,
             previous_signature=previous_signature,
-            video_hash=actual_merkle_root
+            video_hash=actual_merkle_root,
         )
 
         hardware_signature = HardwareSignature(
@@ -108,23 +119,23 @@ class VTRContainer:
             merkle_root=actual_merkle_root,
             location_block_hash=location_block_hash,
             previous_signature_link=previous_signature,
-            nonce=nonce
+            nonce=nonce,
         )
 
         # --- 2. Construct Final Sidecar ---
         legal_assertions = LegalAssertions(
             x_vtr_ai_training=allow_ai_training,
-            copyright_notice="Scraping this data without consent violates DMCA Sec 1202."
+            copyright_notice="Scraping this data without consent violates DMCA Sec 1202.",
         )
 
         sidecar = VTRSidecar(
             vtr_version="2.2",
             hardware_signature=hardware_signature,
-            legal_assertions=legal_assertions
+            legal_assertions=legal_assertions,
         )
 
         # Write to disk
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             f.write(sidecar.model_dump_json(indent=4))
 
         logger.info(f"✅ VTR Sidecar created: {filename}")
@@ -142,12 +153,14 @@ def ensure_dummy_video(filename):
             os.makedirs(parent_dir, exist_ok=True)
         logger.info(f"🎥 Generating dummy video file: {filename}")
         # Generate 1MB of random bytes to simulate video content
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(os.urandom(1024 * 1024))
+
 
 if __name__ == "__main__":
     import sys
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='%(message)s')
+
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout, format="%(message)s")
     logger.info("--- OntoLogics VTR Generator v2.0 (Merged POC) ---")
 
     ensure_dummy_video("first_video.mp4")
@@ -160,4 +173,6 @@ if __name__ == "__main__":
     # Simulate capturing a subsequent video (Second Link in the Chain)
     camera_2 = VTRContainer("second_video.mp4", sensor_id_mock="SENSOR_PRNU_XYZ_999")
     # Link to the first sidecar to create the Chain of Custody
-    camera_2.create_sidecar(allow_ai_training=False, previous_sidecar_path="first_video.mp4.vtr.json")
+    camera_2.create_sidecar(
+        allow_ai_training=False, previous_sidecar_path="first_video.mp4.vtr.json"
+    )

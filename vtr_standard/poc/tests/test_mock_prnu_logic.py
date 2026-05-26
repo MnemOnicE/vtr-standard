@@ -20,8 +20,7 @@ class TestMockPRNU(unittest.TestCase):
         self.assertTrue(proof.startswith("zk_snark_"))
 
         pk = prnu.get_public_key()
-        is_valid = MockPRNU.verify_zk_proof(
-            pk, "test.mp4", ts, proof, lf, lbh, n, ps)
+        is_valid = MockPRNU.verify_zk_proof(pk, "test.mp4", ts, proof, lf, lbh, n, ps)
         self.assertTrue(is_valid)
 
         # Cleanup
@@ -47,6 +46,7 @@ class TestMockPRNU(unittest.TestCase):
     def test_static_hash_video_content(self):
         """Verifies _static_hash_video_content returns a valid 64-char hex string."""
         import tempfile
+
         with tempfile.NamedTemporaryFile(mode="wb", suffix=".mp4", delete=False) as tmp:
             tmp.write(b"dummy video data for hashing test")
             test_file = tmp.name
@@ -68,27 +68,16 @@ class TestMockPRNU(unittest.TestCase):
         prnu = MockPRNU("sensor_123")
 
         # Truthy cases (case-insensitive)
-        truthy_values = [
-            "true",
-            "1",
-            "pass",
-            "TRUE",
-            "Pass",
-            " true ",
-            " pass\n"]
+        truthy_values = ["true", "1", "pass", "TRUE", "Pass", " true ", " pass\n"]
         for val in truthy_values:
             with patch.dict(os.environ, {"VTR_TEST_LIVENESS": val}):
-                self.assertTrue(
-                    prnu.check_liveness(),
-                    f"Expected True for '{val}'")
+                self.assertTrue(prnu.check_liveness(), f"Expected True for '{val}'")
 
         # Falsy and edge cases
         falsy_values = ["false", "0", "fail", "random", "", " false "]
         for val in falsy_values:
             with patch.dict(os.environ, {"VTR_TEST_LIVENESS": val}):
-                self.assertFalse(
-                    prnu.check_liveness(),
-                    f"Expected False for '{val}'")
+                self.assertFalse(prnu.check_liveness(), f"Expected False for '{val}'")
 
     def test_location_block_hash_logic(self):
         """Tests that location block hash is deterministic and configurable."""
@@ -99,16 +88,12 @@ class TestMockPRNU(unittest.TestCase):
         # 1. Test Default Stability
         prnu1 = MockPRNU(sensor_id)
         hash1 = prnu1.calculate_location_block_hash()
-        self.assertEqual(
-            len(hash1),
-            64,
-            "Hash should be 64-char hex string (SHA256)")
+        self.assertEqual(len(hash1), 64, "Hash should be 64-char hex string (SHA256)")
 
         prnu2 = MockPRNU(sensor_id)
         self.assertEqual(
-            hash1,
-            prnu2.calculate_location_block_hash(),
-            "Hash should be deterministic")
+            hash1, prnu2.calculate_location_block_hash(), "Hash should be deterministic"
+        )
 
         # 2. Test VTR_TEST_GPS override
         custom_gps = "40.7128,-74.0060"  # NYC
@@ -116,14 +101,12 @@ class TestMockPRNU(unittest.TestCase):
             prnu_nyc = MockPRNU(sensor_id)
             hash_nyc = prnu_nyc.calculate_location_block_hash()
             self.assertNotEqual(
-                hash1,
-                hash_nyc,
-                "Hash should change with VTR_TEST_GPS override")
+                hash1, hash_nyc, "Hash should change with VTR_TEST_GPS override"
+            )
 
             # Verify consistency for same override
             prnu_nyc_2 = MockPRNU(sensor_id)
-            self.assertEqual(
-                hash_nyc, prnu_nyc_2.calculate_location_block_hash())
+            self.assertEqual(hash_nyc, prnu_nyc_2.calculate_location_block_hash())
 
         # 3. Test KDF Binding (VTR_KDF_SALT)
         # The location hash is derived using the same KDF salt as the public
@@ -132,13 +115,14 @@ class TestMockPRNU(unittest.TestCase):
             MockPRNU._get_kdf_params.cache_clear()
         MockPRNU._get_kdf_params.cache_clear()
         MockPRNU._derive_pbkdf2.cache_clear()
-        with patch.dict(os.environ, {"VTR_KDF_SALT": "new_security_salt_2025"}, clear=True):
+        with patch.dict(
+            os.environ, {"VTR_KDF_SALT": "new_security_salt_2025"}, clear=True
+        ):
             prnu_salted = MockPRNU(sensor_id)
             hash_salted = prnu_salted.calculate_location_block_hash()
             self.assertNotEqual(
-                hash1,
-                hash_salted,
-                "Hash should change with VTR_KDF_SALT override")
+                hash1, hash_salted, "Hash should change with VTR_KDF_SALT override"
+            )
         MockPRNU._get_kdf_params.cache_clear()
 
     def test_canonicalization_attack_prevention(self):
@@ -158,8 +142,7 @@ class TestMockPRNU(unittest.TestCase):
         nonce = "nonce_123"
         prev = "prev_sig"
 
-        proof1 = MockPRNU.calculate_expected_proof(
-            pk1, vh1, ts, lf, lbh, nonce, prev)
+        proof1 = MockPRNU.calculate_expected_proof(pk1, vh1, ts, lf, lbh, nonce, prev)
 
         # Attack case: shift 'part1' into the video hash, and change the public key
         # Without length-prefixing, if they joined like: "pubkey_part1" + "|" + "part2_hash",
@@ -168,14 +151,14 @@ class TestMockPRNU(unittest.TestCase):
         pk2 = "pubkey_part"
         vh2 = "1part2_hash"
 
-        proof2 = MockPRNU.calculate_expected_proof(
-            pk2, vh2, ts, lf, lbh, nonce, prev)
+        proof2 = MockPRNU.calculate_expected_proof(pk2, vh2, ts, lf, lbh, nonce, prev)
 
         # The resulting hashes must be different
         self.assertNotEqual(
             proof1,
             proof2,
-            "Canonicalization attack succeeded: shifted boundaries produced the same hash!")
+            "Canonicalization attack succeeded: shifted boundaries produced the same hash!",
+        )
 
 
 if __name__ == "__main__":

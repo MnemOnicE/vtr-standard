@@ -28,7 +28,8 @@ class MockPRNU:
         if os.environ.get("VTR_ENV") == "PRODUCTION":
             raise RuntimeError(
                 "CRITICAL SECURITY VIOLATION: MockPRNU loaded in PRODUCTION environment. "
-                "This module is for testing only. Use RealPRNU interface.")
+                "This module is for testing only. Use RealPRNU interface."
+            )
 
         # Mock GPS Block used for location hashing.
         # Check env var for deterministic override: VTR_TEST_GPS
@@ -39,24 +40,22 @@ class MockPRNU:
 
     def get_public_key(self):
         """Derives a simulated Public Verification Key from the sensor ID."""
-        return self._derive_pbkdf2(
-            self.sensor_id,
-            self._kdf_salt,
-            self._kdf_iterations)
+        return self._derive_pbkdf2(self.sensor_id, self._kdf_salt, self._kdf_iterations)
 
     def _hash_video_content(self, video_path):
         """Calculates the Merkle Root of the video file content."""
         return MockPRNU._static_hash_video_content(video_path)
 
     def generate_zk_proof(
-            self,
-            video_path,
-            timestamp,
-            liveness_flag,
-            location_block_hash,
-            nonce,
-            previous_signature=None,
-            video_hash=None):
+        self,
+        video_path,
+        timestamp,
+        liveness_flag,
+        location_block_hash,
+        nonce,
+        previous_signature=None,
+        video_hash=None,
+    ):
         """Simulates generating a Zero-Knowledge Proof (ZKP) for V2.0.
 
         Binds the Verification Key, Merkle Root, Timestamp, Liveness, Location,
@@ -89,7 +88,7 @@ class MockPRNU:
             liveness_flag=liveness_flag,
             location_block_hash=location_block_hash,
             nonce=nonce,
-            previous_signature=previous_signature
+            previous_signature=previous_signature,
         )
 
     def check_liveness(self):
@@ -115,10 +114,7 @@ class MockPRNU:
 
     def calculate_location_block_hash(self):
         """Calculates the hash of the location data (salted)."""
-        return self._derive_pbkdf2(
-            self.gps_salt,
-            self._kdf_salt,
-            self._kdf_iterations)
+        return self._derive_pbkdf2(self.gps_salt, self._kdf_salt, self._kdf_iterations)
 
     @staticmethod
     @functools.lru_cache(maxsize=1)
@@ -127,10 +123,7 @@ class MockPRNU:
         env_salt = os.environ.get("VTR_KDF_SALT")
         salt = env_salt.encode() if env_salt else b"vtr_kdf_salt_2025_canonical"
         try:
-            iterations = max(
-                100000, int(
-                    os.environ.get(
-                        "VTR_KDF_ITERATIONS", 100000)))
+            iterations = max(100000, int(os.environ.get("VTR_KDF_ITERATIONS", 100000)))
         except ValueError:
             iterations = 100000
         return salt, iterations
@@ -149,12 +142,7 @@ class MockPRNU:
             str: The hex string of the derived PBKDF2-HMAC-SHA256 key.
         """
         """Derives a hex string using PBKDF2-HMAC-SHA256 with caching."""
-        return hashlib.pbkdf2_hmac(
-            "sha256",
-            data.encode(),
-            salt,
-            iterations
-        ).hex()
+        return hashlib.pbkdf2_hmac("sha256", data.encode(), salt, iterations).hex()
 
     @staticmethod
     def _static_hash_video_content(video_path):
@@ -163,13 +151,14 @@ class MockPRNU:
 
     @staticmethod
     def calculate_expected_proof(
-            public_key: str,
-            video_hash: str,
-            timestamp: float,
-            liveness_flag: bool,
-            location_block_hash: str,
-            nonce: str,
-            previous_signature: Optional[str] = None) -> str:
+        public_key: str,
+        video_hash: str,
+        timestamp: float,
+        liveness_flag: bool,
+        location_block_hash: str,
+        nonce: str,
+        previous_signature: Optional[str] = None,
+    ) -> str:
         """Calculates the expected zk_proof string based on the provided inputs.
 
         Args:
@@ -194,7 +183,7 @@ class MockPRNU:
             "true" if liveness_flag else "false",
             location_block_hash,
             nonce,
-            previous_signature or ""
+            previous_signature or "",
         ]
 
         # Format as: length:value
@@ -205,15 +194,16 @@ class MockPRNU:
 
     @staticmethod
     def verify_zk_proof(
-            public_key,
-            video_path,
-            timestamp,
-            zk_proof,
-            liveness_flag,
-            location_block_hash,
-            nonce,
-            previous_signature=None,
-            video_hash=None):
+        public_key,
+        video_path,
+        timestamp,
+        zk_proof,
+        liveness_flag,
+        location_block_hash,
+        nonce,
+        previous_signature=None,
+        video_hash=None,
+    ):
         """Verifies a simulated Zero-Knowledge Proof.
 
         Now requires liveness_flag, location_block_hash, and nonce to reconstruct the hash.
@@ -242,7 +232,7 @@ class MockPRNU:
             liveness_flag=liveness_flag,
             location_block_hash=location_block_hash,
             nonce=nonce,
-            previous_signature=previous_signature
+            previous_signature=previous_signature,
         )
 
         return hmac.compare_digest(expected_proof, zk_proof)

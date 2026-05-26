@@ -15,6 +15,7 @@ from .schemas import VTRSidecar
 # Configure module-level logger
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class VerificationResult:
     """Encapsulates the result of a VTR validation attempt.
@@ -25,6 +26,7 @@ class VerificationResult:
         message (Optional[str]): A human-readable description of the result.
         details (Dict[str, Any]): Additional context or metadata about the validation.
     """
+
     is_valid: bool
     error_code: Optional[str] = None
     message: Optional[str] = None
@@ -39,10 +41,13 @@ class VTRValidator:
     """
 
     def _parse_sidecar(self, sidecar_path: str) -> VTRSidecar:
-        with open(sidecar_path, 'r') as f:
+        with open(sidecar_path, "r") as f:
             raw_data = json.load(f)
         return VTRSidecar.model_validate(raw_data)
-    def _verify_crypto_binding(self, sidecar: VTRSidecar, video_path: str) -> VerificationResult:
+
+    def _verify_crypto_binding(
+        self, sidecar: VTRSidecar, video_path: str
+    ) -> VerificationResult:
         hw_sig = sidecar.hardware_signature
 
         public_key = hw_sig.public_key
@@ -67,7 +72,7 @@ class VTRValidator:
             location_block_hash=location_block_hash,
             nonce=nonce,
             previous_signature=previous_signature,
-            video_hash=actual_merkle_root
+            video_hash=actual_merkle_root,
         )
 
         if is_signature_valid:
@@ -81,33 +86,31 @@ class VTRValidator:
                     message="Sidecar Merkle Root does not match actual video Merkle Root.",
                     details={
                         "sidecar_root": sidecar_merkle_root,
-                        "actual_root": actual_merkle_root
-                    }
+                        "actual_root": actual_merkle_root,
+                    },
                 )
 
             # Strict Liveness Check (Security Feature)
             if not liveness_flag:
-                 return VerificationResult(
+                return VerificationResult(
                     is_valid=False,
                     error_code="LIVENESS_FAILURE",
                     message="Hardware liveness check failed. This content is flagged as potentially synthetic.",
-                    details={"liveness_flag": False}
+                    details={"liveness_flag": False},
                 )
 
             details = {
-                    "vtr_version": sidecar.vtr_version,
-                    "timestamp": timestamp,
-                    "liveness": liveness_flag,
-                    "merkle_root": actual_merkle_root
+                "vtr_version": sidecar.vtr_version,
+                "timestamp": timestamp,
+                "liveness": liveness_flag,
+                "merkle_root": actual_merkle_root,
             }
             if previous_signature:
                 details["chained_to_previous_proof"] = True
                 details["previous_proof_hash"] = previous_signature
 
             return VerificationResult(
-                is_valid=True,
-                message="VTR container is valid.",
-                details=details
+                is_valid=True, message="VTR container is valid.", details=details
             )
         else:
             # Enhanced debugging for failed signatures
@@ -118,7 +121,7 @@ class VTRValidator:
                 liveness_flag=liveness_flag,
                 location_block_hash=location_block_hash,
                 nonce=nonce,
-                previous_signature=previous_signature
+                previous_signature=previous_signature,
             )
 
             return VerificationResult(
@@ -134,12 +137,13 @@ class VTRValidator:
                     "public_key": public_key,
                     "previous_signature_link": previous_signature,
                     "proof_received": zk_proof,
-                    "proof_expected": expected_proof
-                }
+                    "proof_expected": expected_proof,
+                },
             )
 
-
-    def validate_container(self, video_path: str, sidecar_path: Optional[str] = None) -> VerificationResult:
+    def validate_container(
+        self, video_path: str, sidecar_path: Optional[str] = None
+    ) -> VerificationResult:
         """Validates a video file against its VTR sidecar.
 
         Args:
@@ -162,13 +166,13 @@ class VTRValidator:
             return VerificationResult(
                 is_valid=False,
                 error_code="SIDECAR_NOT_FOUND",
-                message=f"Sidecar file not found at: {sidecar_path}"
+                message=f"Sidecar file not found at: {sidecar_path}",
             )
         except json.JSONDecodeError:
             return VerificationResult(
                 is_valid=False,
                 error_code="INVALID_JSON",
-                message="Sidecar file contains invalid JSON."
+                message="Sidecar file contains invalid JSON.",
             )
         except ValidationError as e:
             # Pydantic validation failed - Log internally, sanitize externally
@@ -178,16 +182,20 @@ class VTRValidator:
                 is_valid=False,
                 error_code="INVALID_SCHEMA",
                 message="Sidecar file does not match the required VTR schema.",
-                details={"validation_error_count": len(e.errors()) if hasattr(e, 'errors') else 1}
+                details={
+                    "validation_error_count": (
+                        len(e.errors()) if hasattr(e, "errors") else 1
+                    )
+                },
             )
-        except OSError as e:
+        except OSError:
             # Generic read failure - Log internally, sanitize externally
             logger.error("VTR Sidecar Read Error", exc_info=True)
             return VerificationResult(
                 is_valid=False,
                 error_code="READ_ERROR",
                 message="An error occurred while reading or parsing the sidecar file.",
-                details={}
+                details={},
             )
 
         # 3. Cryptographic Verification
@@ -197,13 +205,13 @@ class VTRValidator:
             return VerificationResult(
                 is_valid=False,
                 error_code="VIDEO_NOT_FOUND",
-                message=f"Video file not found at: {video_path}"
+                message=f"Video file not found at: {video_path}",
             )
-        except OSError as e:
+        except OSError:
             logger.error("VTR Video Read Error", exc_info=True)
             return VerificationResult(
                 is_valid=False,
                 error_code="READ_ERROR",
                 message="An error occurred while reading the video file.",
-                details={}
+                details={},
             )
