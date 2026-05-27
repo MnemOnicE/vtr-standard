@@ -6,7 +6,7 @@
 import os
 import json
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from vtr_standard.poc.validator import VTRValidator
 
 # We can define a dummy exception if pydantic is not present
@@ -99,7 +99,7 @@ class TestValidator(unittest.TestCase):
         validator = VTRValidator()
         mock_parse_sidecar.side_effect = OSError("Disk error")
 
-        with self.assertLogs("vtr_standard.poc.validator", level="ERROR") as cm:
+        with self.assertLogs("vtr_standard.poc.validator", level="ERROR"):
             result = validator.validate_container(self.video_file)
 
         self.assertFalse(result.is_valid)

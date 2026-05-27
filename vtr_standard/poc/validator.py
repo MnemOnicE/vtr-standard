@@ -8,7 +8,6 @@ import os
 import logging
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any
-from pydantic import ValidationError
 from .mock_prnu import MockPRNU
 from .schemas import VTRSidecar
 
