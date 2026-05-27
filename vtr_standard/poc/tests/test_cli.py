@@ -12,7 +12,6 @@ import sys
 
 # VTR-STANDUP: Fallback Mock for restricted environments where pydantic is missing.
 
-
 class MockBaseModel:
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
@@ -39,8 +38,8 @@ mock_pydantic.Field = MagicMock(return_value=None)
 sys.modules["pydantic"] = mock_pydantic
 
 
-from vtr_standard.poc.vtr_container import VTRContainer  # noqa: E402
-from vtr_standard.poc.cli import cmd_verify, cmd_sign  # noqa: E402
+from vtr_standard.poc.vtr_container import VTRContainer # noqa: E402
+from vtr_standard.poc.cli import cmd_verify, cmd_sign # noqa: E402
 
 
 class TestCLI(unittest.TestCase):

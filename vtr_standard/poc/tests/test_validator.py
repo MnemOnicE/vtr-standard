@@ -6,17 +6,15 @@
 import os
 import json
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from vtr_standard.poc.validator import VTRValidator
 
 # We can define a dummy exception if pydantic is not present
 try:
     from pydantic import ValidationError
 except ImportError:
-
     class ValidationError(Exception):
         pass
-
 
 class TestValidator(unittest.TestCase):
     def setUp(self):
@@ -50,7 +48,7 @@ class TestValidator(unittest.TestCase):
         class MockValidationError(Exception):
             def __init__(self, msg):
                 super().__init__(msg)
-                self.errors = lambda: [1, 2, 3]  # fake errors list
+                self.errors = lambda: [1, 2, 3] # fake errors list
 
         mock_error = MockValidationError("Test Error\r\nLine 1\nLine 2\rLine 3")
         mock_parse_sidecar.side_effect = mock_error
@@ -99,7 +97,7 @@ class TestValidator(unittest.TestCase):
         validator = VTRValidator()
         mock_parse_sidecar.side_effect = OSError("Disk error")
 
-        with self.assertLogs("vtr_standard.poc.validator", level="ERROR"):
+        with self.assertLogs("vtr_standard.poc.validator", level="ERROR") as cm:
             result = validator.validate_container(self.video_file)
 
         self.assertFalse(result.is_valid)
@@ -130,13 +128,8 @@ class TestValidator(unittest.TestCase):
             json.dump(sidecar_data, f)
 
         validator = VTRValidator()
-        with patch(
-            "vtr_standard.poc.validator.MockPRNU._static_hash_video_content",
-            return_value="actual_root",
-        ):
-            with patch(
-                "vtr_standard.poc.validator.MockPRNU.verify_zk_proof", return_value=True
-            ):
+        with patch("vtr_standard.poc.validator.MockPRNU._static_hash_video_content", return_value="actual_root"):
+            with patch("vtr_standard.poc.validator.MockPRNU.verify_zk_proof", return_value=True):
                 result = validator.validate_container(self.video_file)
 
         self.assertFalse(result.is_valid)
@@ -149,13 +142,8 @@ class TestValidator(unittest.TestCase):
             json.dump(sidecar_data, f)
 
         validator = VTRValidator()
-        with patch(
-            "vtr_standard.poc.validator.MockPRNU._static_hash_video_content",
-            return_value="actual_root",
-        ):
-            with patch(
-                "vtr_standard.poc.validator.MockPRNU.verify_zk_proof", return_value=True
-            ):
+        with patch("vtr_standard.poc.validator.MockPRNU._static_hash_video_content", return_value="actual_root"):
+            with patch("vtr_standard.poc.validator.MockPRNU.verify_zk_proof", return_value=True):
                 result = validator.validate_container(self.video_file)
 
         self.assertFalse(result.is_valid)
@@ -167,13 +155,8 @@ class TestValidator(unittest.TestCase):
             json.dump(sidecar_data, f)
 
         validator = VTRValidator()
-        with patch(
-            "vtr_standard.poc.validator.MockPRNU.verify_zk_proof", return_value=False
-        ):
-            with patch(
-                "vtr_standard.poc.validator.MockPRNU.calculate_expected_proof",
-                return_value="expected_proof",
-            ):
+        with patch("vtr_standard.poc.validator.MockPRNU.verify_zk_proof", return_value=False):
+            with patch("vtr_standard.poc.validator.MockPRNU.calculate_expected_proof", return_value="expected_proof"):
                 result = validator.validate_container(self.video_file)
 
         self.assertFalse(result.is_valid)
@@ -186,19 +169,13 @@ class TestValidator(unittest.TestCase):
             json.dump(sidecar_data, f)
 
         validator = VTRValidator()
-        with patch(
-            "vtr_standard.poc.validator.MockPRNU._static_hash_video_content",
-            return_value="actual_root",
-        ):
-            with patch(
-                "vtr_standard.poc.validator.MockPRNU.verify_zk_proof", return_value=True
-            ):
+        with patch("vtr_standard.poc.validator.MockPRNU._static_hash_video_content", return_value="actual_root"):
+            with patch("vtr_standard.poc.validator.MockPRNU.verify_zk_proof", return_value=True):
                 result = validator.validate_container(self.video_file)
 
         self.assertTrue(result.is_valid)
         self.assertEqual(result.details["merkle_root"], "actual_root")
         self.assertTrue(result.details["liveness"])
-
 
 if __name__ == "__main__":
     unittest.main()

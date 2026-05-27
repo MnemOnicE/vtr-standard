@@ -11,7 +11,6 @@ from unittest.mock import MagicMock
 # VTR-STANDUP: Fallback Mock for restricted environments where pydantic is missing.
 # Sentinel: "Trust nothing, but verify the logic even if the infra is brittle."
 
-
 class MockBaseModel:
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
@@ -30,7 +29,6 @@ class MockBaseModel:
             return str(obj)
 
         return json.dumps(self.__dict__, default=default)
-
 
 mock_pydantic = MagicMock()
 mock_pydantic.BaseModel = MockBaseModel
