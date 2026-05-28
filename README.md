@@ -45,9 +45,9 @@ graph TD
 
 ```mermaid
 graph LR
-    A[Recording 1<br/>Sidecar] -->|signature_link| B[Recording 2<br/>Sidecar]
-    B -->|signature_link| C[Recording 3<br/>Sidecar]
-    C -->|signature_link| D[Recording N<br/>Sidecar]
+    A[Recording 1<br/>Sidecar] -->|previous_signature_link| B[Recording 2<br/>Sidecar]
+    B -->|previous_signature_link| C[Recording 3<br/>Sidecar]
+    C -->|previous_signature_link| D[Recording N<br/>Sidecar]
 ```
 
 
