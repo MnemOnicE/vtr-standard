@@ -145,9 +145,10 @@ sequenceDiagram
     participant VTRValidator
     participant Filesystem
 
-    CLI->>Filesystem: Read .mp4 and .vtr.json
-    Filesystem-->>VTRValidator: Load Data
+    CLI->>VTRValidator: Validate (video_path, sidecar_path)
+    VTRValidator->>Filesystem: Read .vtr.json sidecar
     VTRValidator->>VTRValidator: 1. Validate JSON Schema
+    VTRValidator->>Filesystem: Read .mp4 video
     VTRValidator->>VTRValidator: 2. Recompute Merkle Root
     VTRValidator->>VTRValidator: 3. Verify ZK Proof matches
     VTRValidator-->>CLI: Output Verification Result
