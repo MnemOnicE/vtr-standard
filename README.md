@@ -113,9 +113,9 @@ sequenceDiagram
     participant Filesystem
 
     CLI->>VTRContainer: Init with video
-    VTRContainer->>MockPRNU: request ZK proof & metadata
-    MockPRNU-->>VTRContainer: return ZK Proof
     VTRContainer->>VTRContainer: Compute Merkle Tree (frame hashing)
+    VTRContainer->>MockPRNU: request ZK proof (with Merkle Root)
+    MockPRNU-->>VTRContainer: return ZK Proof
     VTRContainer->>VTRContainer: Assemble VTR Sidecar Schema
     VTRContainer->>Filesystem: Write .vtr.json
     Filesystem-->>CLI: Success Output
