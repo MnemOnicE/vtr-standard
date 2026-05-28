@@ -113,15 +113,15 @@ sequenceDiagram
     participant Filesystem
 
     CLI->>VTRContainer: Init with video
-    VTRContainer->>VTRContainer: Compute Merkle Tree (frame hashing)
-    VTRContainer->>MockPRNU: request ZK proof (with Merkle Root)
+    VTRContainer->>MockPRNU: request ZK proof & metadata
     MockPRNU-->>VTRContainer: return ZK Proof
+    VTRContainer->>VTRContainer: Compute Merkle Tree (frame hashing)
     VTRContainer->>VTRContainer: Assemble VTR Sidecar Schema
     VTRContainer->>Filesystem: Write .vtr.json
     Filesystem-->>CLI: Success Output
 ```
 
-![Sign Command Example](https://dummyimage.com/600x300/282c34/abb2bf.gif&text=python3+-m+vtr_standard.poc.cli+sign+my_video.mp4)
+![Sign Command Example](docs/assets/sign_demo.gif)
 
 
 #### Verify a Video
@@ -145,16 +145,16 @@ sequenceDiagram
     participant VTRValidator
     participant Filesystem
 
-    CLI->>VTRValidator: Validate (video_path, sidecar_path)
-    VTRValidator->>Filesystem: Read .vtr.json sidecar
+    CLI->>Filesystem: Read .mp4 and .vtr.json
+    Filesystem-->>VTRValidator: Load Data
     VTRValidator->>VTRValidator: 1. Validate JSON Schema
-    VTRValidator->>Filesystem: Read .mp4 video
     VTRValidator->>VTRValidator: 2. Recompute Merkle Root
-    VTRValidator->>VTRValidator: 3. Verify ZK Proof matches
+    participant MockPRNU
+    VTRValidator->>MockPRNU: 3. Verify ZK Proof matches
     VTRValidator-->>CLI: Output Verification Result
 ```
 
-![Verify Command Example](https://dummyimage.com/600x300/282c34/abb2bf.gif&text=python3+-m+vtr_standard.poc.cli+verify+my_video.mp4)
+![Verify Command Example](docs/assets/verify_demo.gif)
 
 
 
